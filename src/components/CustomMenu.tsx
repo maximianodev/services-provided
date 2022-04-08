@@ -29,16 +29,16 @@ export const CustomMenu = () => {
             </Link>
           </MenuItem>
           <MenuItem>
-            <Link href="/registers">
+            <Link href="/services">
               <a>
-                Registros
+                Serviços
               </a>
             </Link>
           </MenuItem>
           <MenuItem>
-            <Link href="/new-register">
+            <Link href="/new-service">
               <a>
-                Novo Registro
+                Novo Serviço
               </a>
             </Link>
           </MenuItem>

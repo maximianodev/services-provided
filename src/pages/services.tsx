@@ -2,10 +2,10 @@ import { Box } from '@chakra-ui/react'
 import type { GetServerSideProps, NextPage } from 'next'
 import { getSession } from "next-auth/react"
 
-const NewRegister: NextPage = () => {
+const Services: NextPage = () => {
   return (
     <Box w="100%" textAlign="center" mt="30px">
-      Novo Registro
+      Registros
     </Box>
   )
 }
@@ -28,4 +28,4 @@ export async function getServerSideProps(context: GetServerSideProps) {
   }
 }
 
-export default NewRegister;
+export default Services;

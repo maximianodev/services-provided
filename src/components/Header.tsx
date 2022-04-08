@@ -17,6 +17,7 @@ export const Header = () => {
       py="4"
       position="sticky"
       top="0"
+      zIndex="10"
     >
       <CustomMenu />
 
