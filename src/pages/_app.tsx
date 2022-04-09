@@ -3,6 +3,9 @@ import { SessionProvider } from "next-auth/react"
 import { ChakraProvider } from '@chakra-ui/react'
 import { Header } from '../components/Header'
 import { theme } from '../styles/theme'
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient()
 
 function MyApp({
   Component,
@@ -11,8 +14,10 @@ function MyApp({
   return (
     <SessionProvider session={session}>
       <ChakraProvider theme={theme}>
-        <Header />
-        <Component {...pageProps} />
+        <QueryClientProvider client={queryClient}>
+          <Header />
+          <Component {...pageProps} />
+        </QueryClientProvider>
       </ChakraProvider>
     </SessionProvider>
   )

@@ -1,43 +1,54 @@
-import { Box, Button, Flex, FormLabel, Heading, Input, Stack, Stat, StatLabel, StatNumber, Table, TableContainer, Tbody, Td, Text, Textarea, Th, Thead, Tr } from '@chakra-ui/react'
+import {
+  Box,
+  Button,
+  FormLabel,
+  Heading,
+  Input,
+  Spinner,
+  Stack,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Textarea,
+  Th,
+  Thead,
+  Tr,
+  useToast
+} from '@chakra-ui/react'
+import axios from 'axios';
 import type { GetServerSideProps, NextPage } from 'next'
 import { getSession } from "next-auth/react"
 import { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
-
-const formScheme = {
-  items: [
-    {
-      title: "Cliente",
-      fields: [
-        { name: "client_name", type: "text", label: "Nome" },
-        { name: "client_address", type: "text", label: "Endereço" },
-        { name: "client_phone", type: "text", label: "Telefone" },
-        { name: "client_cnpj_cpf", type: "text", label: "CNPJ ou CPF" },
-      ]
-    },
-    {
-      title: "Carro",
-      fields: [
-        { name: "car_color", type: "text", label: "Cor" },
-        { name: "car_brand", type: "text", label: "Marca" },
-        { name: "car_model", type: "text", label: "Modelo" },
-        { name: "car_license_plate", type: "text", label: "Placa" },
-        { name: "car_chassis", type: "text", label: "Chassis" },
-      ]
-    },
-    {
-      title: "Diagnóstico / Solução",
-      fields: [
-        { name: "car_diagnosis", type: "textarea", label: "Diagnósticos" },
-        { name: "car_solution", type: "textarea", label: "Solução" }
-      ]
-    }
-  ]
-}
+import { useMutation, useQueryClient } from 'react-query';
+import { formScheme } from '../utils/formScheme';
+import { generatePDF } from '../utils/generatePDF';
 
 interface ServiceProps {
   name: string;
   value: string;
+}
+
+export interface FormData {
+  client_name: string;
+  client_address: string;
+  client_phone: string;
+  client_cnpj_cpf: string;
+  car_color: string;
+  car_brand: string;
+  car_model: string;
+  car_license_plate: string;
+  car_chassis: string;
+  car_diagnosis: string;
+  car_solution: string;
+  car_age: string;
+  total: string;
+  services: ServiceProps[];
 }
 
 const NewService: NextPage = () => {
@@ -45,7 +56,48 @@ const NewService: NextPage = () => {
   const [serviceValue, setServiceValue] = useState<string>('')
   const [services, setServices] = useState<ServiceProps[]>([])
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm();
+  const toast = useToast()
+
+  const { register, handleSubmit, formState: { errors }, setValue, reset, watch } = useForm();
+
+  const queryClient = useQueryClient();
+
+  const registerFormData = async (data: any) => {
+    const { data: response } = await axios.post('/api/services', data);
+    return response.data;
+  };
+
+  const { mutate, isLoading } = useMutation(registerFormData, {
+    onSuccess: () => {
+      toast({
+        title: 'Registro criado com sucesso.',
+        description: 'Seu PDF foi baixado!',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+      })
+    },
+    onError: () => {
+      toast({
+        title: 'Erro ao criar o registro',
+        description: 'Tente denovo, caso persista contate o suporte',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+      })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries('create');
+    }
+  });
+
+  const servicesTotal = services.length ?
+    services?.reduce((acc: number, item: ServiceProps) => {
+      let value = Number(item.value)
+      acc = value + acc
+
+      return acc
+    }, 0).toFixed(2) : 0
 
   const handleSaveService = (ev: React.SyntheticEvent) => {
     ev.preventDefault()
@@ -78,16 +130,16 @@ const NewService: NextPage = () => {
     setValue('services', servicesFiltered)
   }
 
+  const onSubmit = (data: any) => {
+    mutate(data)
+    generatePDF(data)
+    reset()
+    setServices([])
+  }
 
-  const servicesTotal = services.length ?
-    services?.reduce((acc: number, item: ServiceProps) => {
-      let value = Number(item.value)
-      acc = value + acc
-
-      return acc
-    }, 0).toFixed(2) : 0
-
-  const onSubmit = (data: any) => console.log(data);
+  useEffect(() => {
+    setValue('total', servicesTotal)
+  }, [servicesTotal, services])
 
   return (
     <Box my="15px">
@@ -118,12 +170,14 @@ const NewService: NextPage = () => {
 
                         {item.type === "textarea" &&
                           <Textarea
+                            fontSize="12px"
                             isInvalid={errors[item.name] ? true : false}
                             {...register(`${item.name}`, { required: true })}
                           />}
 
                         {item.type === "text" &&
                           <Input
+                            fontSize="12px"
                             isInvalid={errors[item.name] ? true : false}
                             type={item.type} {...register(`${item.name}`, { required: true })}
                           />}
@@ -152,6 +206,7 @@ const NewService: NextPage = () => {
                       Nome do Serviço
                     </FormLabel>
                     <Input
+                      fontSize="12px"
                       type="text"
                       name="service_name"
                       onChange={(ev) => setServiceName(ev.currentTarget.value)}
@@ -168,6 +223,7 @@ const NewService: NextPage = () => {
                       Valor do Serviço
                     </FormLabel>
                     <Input
+                      fontSize="12px"
                       type="number"
                       name="service_value"
                       onChange={(ev) => setServiceValue(ev.currentTarget.value)}
@@ -218,21 +274,13 @@ const NewService: NextPage = () => {
                   </>}
 
               </Box>
-              <Flex w="100%" justify="space-between">
-                <Button
-                  type="submit"
-                  colorScheme="blue"
-                >
-                  Gerar PDF
-                </Button>
-
+              {isLoading ? <Spinner /> :
                 <Button
                   type="submit"
                   colorScheme="teal"
                 >
                   Salvar
-                </Button>
-              </Flex>
+                </Button>}
             </Stack>
           </form>
         </Box>
