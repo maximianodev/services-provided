@@ -48,13 +48,13 @@ export function generatePDF(data: FormData) {
   doc.text("Diagnóstico", 20, 120);
 
   doc.setFontSize(10);
-  doc.text(`${data.car_diagnosis}`, 20, 125);
+  doc.text(`${data.car_diagnosis}`, 20, 125, { maxWidth: 150 });
 
   doc.setFontSize(15);
   doc.text(`Soluções`, 20, 155);
 
   doc.setFontSize(10);
-  doc.text(`${data.car_solution}`, 20, 162);
+  doc.text(`${data.car_solution}`, 20, 162, { maxWidth: 150 });
 
   doc.setFontSize(15);
   doc.text(`Valores`, 20, 190);

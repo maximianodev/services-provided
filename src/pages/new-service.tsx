@@ -49,6 +49,7 @@ export interface FormData {
   car_age: string;
   total: string;
   services: ServiceProps[];
+  createdAt: string;
 }
 
 const NewService: NextPage = () => {
