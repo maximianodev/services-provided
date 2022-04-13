@@ -6,17 +6,6 @@ export default async function services(req: NextApiRequest, res: NextApiResponse
   const { Services } = await connect();
 
   if (method === 'GET') {
-    // const response = await Services.aggregate([
-    //   {
-    //     $search: {
-    //       text: {
-    //         query: 'lucas',
-    //         path: 'client_name'
-    //       }
-    //     }
-    //   }
-    // ]);
-
     try {
       const myCustomLabels: object = {
         docs: 'clients',
