@@ -26,7 +26,6 @@ import Link from 'next/link'
 import { Fragment, useState } from 'react'
 import { FaCarAlt, FaMoneyCheckAlt, FaRegCalendarAlt, FaSearch, FaSearchPlus, FaUserAlt } from 'react-icons/fa'
 
-import { baseURL } from '../utils/baseUrl'
 import { generatePDF } from '../utils/generatePDF'
 import type { FormData } from './new-service'
 
@@ -192,13 +191,13 @@ const Services = (props: ServicesProps) => {
   const page = pageApi ?? 1
 
   const handleChangePage = async (page: number) => {
-    const { data } = await axios.get(`${baseURL}/api/services?page=${page}`);
+    const { data } = await axios.get(`${window.location.origin}/api/services?page=${page}`);
 
     setCurrentClients(data)
   }
 
   const handleSearch = async (clientName: string) => {
-    const { data } = await axios.get(`${baseURL}/api/services/${clientName}`);
+    const { data } = await axios.get(`${window.location.origin}/api/services/${clientName}`);
 
     const response: FormData[] = data
 
@@ -304,7 +303,7 @@ export async function getServerSideProps(context: GetServerSideProps) {
   }
 
   try {
-    const { data } = await axios.get(`${baseURL}/api/services`);
+    const { data } = await axios.get(`${process.env.NEXTAUTH_URL}/api/services`);
     return {
       props: data,
     }
